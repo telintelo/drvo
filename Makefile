@@ -1,7 +1,7 @@
-obj-m += hello.o
-
 all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD)/hello modules
+	cp $(PWD)/hello/hello.ko . 2>/dev/null
 
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD)/hello clean
+	rm -f $(PWD)/hello.ko
