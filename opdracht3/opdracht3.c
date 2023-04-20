@@ -23,13 +23,13 @@ static const struct file_operations opdracht3_fops = {
     .write = opdracht3_write
 };
 
-struct mychar_device_data {
+struct opdracht3_device_data {
     struct cdev cdev;
 };
 
 static int dev_major = 0;
 static struct class *opdracht3_class = NULL;
-static struct mychar_device_data opdracht3_data[MAX_DEV];
+static struct opdracht3_device_data opdracht3_data[MAX_DEV];
 
 static int opdracht3_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
@@ -67,6 +67,7 @@ static void opdracht3_exit(void)
 
     for (i = 0; i < MAX_DEV; i++) {
         device_destroy(opdracht3_class, MKDEV(dev_major, i));
+        cdev_del(&opdracht3_data[i].cdev);
     }
 
     class_unregister(opdracht3_class);
@@ -95,7 +96,7 @@ static long opdracht3_ioctl(struct file *file, unsigned int cmd, unsigned long a
 
 static ssize_t opdracht3_read(struct file *file, char __user *buf, size_t count, loff_t *offset)
 {
-    uint8_t *data = "Hello from the kernel world!\n";
+    uint8_t *data = "Hello from kernel-space!\n";
     size_t datalen = strlen(data);
 
     printk("Reading device: %d\n", MINOR(file->f_path.dentry->d_inode->i_rdev));
