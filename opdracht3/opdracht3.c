@@ -8,6 +8,9 @@
 
 #define MAX_DEV 2
 
+int my_parameter;
+module_param(my_parameter, int, S_IRUSR|S_IWUSR);
+
 static int opdracht3_open(struct inode *inode, struct file *file);
 static int opdracht3_release(struct inode *inode, struct file *file);
 static long opdracht3_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
@@ -42,6 +45,9 @@ static int opdracht3_init(void)
     int err, i;
     dev_t dev;
 
+    printk("opdracht3_init() called.");
+    printk("Parameter: %d\n", my_parameter);
+
     err = alloc_chrdev_region(&dev, 0, MAX_DEV, "opdracht3");
 
     dev_major = MAJOR(dev);
@@ -54,7 +60,7 @@ static int opdracht3_init(void)
         opdracht3_data[i].cdev.owner = THIS_MODULE;
 
         cdev_add(&opdracht3_data[i].cdev, MKDEV(dev_major, i), 1);
-
+    
         device_create(opdracht3_class, NULL, MKDEV(dev_major, i), NULL, "opdracht3-%d", i);
     }
 
