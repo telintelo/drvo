@@ -7,7 +7,7 @@
 #include <linux/fs.h>
 
 #define MAX_DEV 2
-#define G_BUFFER_SIZE 256
+#define G_BUFFER_SIZE 64
 
 int my_parameter = 0;
 module_param(my_parameter, int, S_IRUSR|S_IWUSR);
@@ -69,6 +69,10 @@ static int opdracht4_init(void)
         device_create(opdracht4_class, NULL, MKDEV(dev_major, i), NULL, "opdracht4-%d", i);
     }
 
+    memset(&g_buffer[0], 'a', G_BUFFER_SIZE);
+    g_buffer[G_BUFFER_SIZE] = '\0';
+    g_buffer[G_BUFFER_SIZE - 1] = 'C';
+
     return 0;
 }
 
@@ -112,17 +116,15 @@ static long opdracht4_ioctl(struct file *file, unsigned int cmd, unsigned long a
 static ssize_t opdracht4_read(struct file *file, char __user *buf, size_t count, loff_t *offset)
 {
     printk("static ssize_t opdracht4_read(struct file *file, char __user *buf, size_t count, loff_t *offset) called with:\n");
-    printk("size_t count = %d, loff_t *offset = %d.\n", count, offset);
+    printk("size_t count = %d, loff_t *offset = %d.\n", count, *offset);
 
     printk("Reading device: %d\n", MINOR(file->f_path.dentry->d_inode->i_rdev));
 
-    if (count > G_BUFFER_SIZE) {
-        count = G_BUFFER_SIZE;
+    if (count + *offset > G_BUFFER_SIZE) {
+        count = G_BUFFER_SIZE - *offset;
     }
 
-    strcpy(g_buffer, "Hello World!\n");
-
-    if (copy_to_user(buf, g_buffer, count)) {
+    if (copy_to_user(buf, g_buffer + *offset, count)) {
         printk("Copy to user returned an error.\n");
         return -EFAULT;
     }
@@ -134,28 +136,23 @@ static ssize_t opdracht4_read(struct file *file, char __user *buf, size_t count,
 
 static ssize_t opdracht4_write(struct file *file, const char __user *buf, size_t count, loff_t *offset)
 {
-    size_t maxdatalen = 30, ncopied;
-    uint8_t databuf[maxdatalen];
-
     printk("static ssize_t opdracht4_write(struct file *file, const char __user *buf, size_t count, loff_t *offset) called.\n");
+    printk("size_t count = %d, loff_t *offset = %d.\n", count, *offset);
 
     printk("Writing device: %d\n", MINOR(file->f_path.dentry->d_inode->i_rdev));
 
-    if (count < maxdatalen) {
-        maxdatalen = count;
+    if (count + *offset > G_BUFFER_SIZE) {
+        count = G_BUFFER_SIZE - *offset;
     }
 
-    ncopied = copy_from_user(databuf, buf, maxdatalen);
-
-    if (ncopied == 0) {
-        printk("Copied %zd bytes from the user\n", maxdatalen);
-    } else {
-        printk("Could't copy %zd bytes from the user\n", ncopied);
+    if (copy_from_user(g_buffer + *offset, buf, count)) {
+        printk("Copy from user returned an error.\n");
+        return -EFAULT;
     }
 
-    databuf[maxdatalen] = 0;
+    printk("Copied %zd bytes from the user\n", count);
 
-    printk("Data from the user: %s\n", databuf);
+    printk("New buffer state: %s\n", g_buffer);
 
     return count;
 }

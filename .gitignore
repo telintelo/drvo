@@ -26,3 +26,4 @@ modules.builtin
 Module.symvers
 
 !.gitignore
+scull/
