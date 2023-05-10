@@ -1,2 +1,2 @@
 all:
-	gcc -o opdracht3-test main.c
+	gcc -o opdracht4-test main.c
