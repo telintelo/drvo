@@ -1,6 +1,10 @@
 TARGET_NAME := opdracht5
 
+ifneq ($(KERNELRELEASE),)
+
 obj-m += ${TARGET_NAME}.o
+
+else
 
 all:
 	$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
@@ -14,3 +18,5 @@ insert: all
 
 remove:
 	sudo rmmod ${TARGET_NAME}
+
+endif

@@ -14,7 +14,7 @@
 #define NETWORKIRQ_NO 19
 
 int my_parameter = 0;
-module_param(my_parameter, int, S_IRUSR|S_IWUSR);
+module_param(my_parameter, int, S_IRUSR | S_IWUSR);
 
 static int opdracht5_open(struct inode *inode, struct file *file);
 static int opdracht5_release(struct inode *inode, struct file *file);
@@ -28,10 +28,10 @@ static const struct file_operations opdracht5_fops = {
     .release = opdracht5_release,
     .unlocked_ioctl = opdracht5_ioctl,
     .read = opdracht5_read,
-    .write = opdracht5_write
-};
+    .write = opdracht5_write};
 
-struct opdracht5_device_data {
+struct opdracht5_device_data
+{
     struct cdev cdev;
 };
 
@@ -42,14 +42,16 @@ static struct opdracht5_device_data opdracht5_data[MAX_DEV];
 static int device_opened = 0;
 static char g_buffer[G_BUFFER_SIZE];
 
-static irqreturn_t irq_handler(int irq,void *dev_id) {
-  printk(KERN_INFO "Shared IRQ: Interrupt Occurred");
-  return IRQ_HANDLED;
+static irqreturn_t irq_handler(int irq, void *dev_id)
+{
+    printk(KERN_INFO "Shared IRQ: Interrupt Occurred");
+    return IRQ_HANDLED;
 }
 
-static irqreturn_t networkirq_handler(int irq,void *dev_id) {
-  printk(KERN_INFO "network Interrupt Occurred");
-  return IRQ_NONE;
+static irqreturn_t networkirq_handler(int irq, void *dev_id)
+{
+    printk(KERN_INFO "network Interrupt Occurred");
+    return IRQ_NONE;
 }
 
 static int opdracht5_uevent(struct device *dev, struct kobj_uevent_env *env)
@@ -74,12 +76,13 @@ static int opdracht5_init(void)
     opdracht5_class = class_create(THIS_MODULE, "opdracht5");
     opdracht5_class->dev_uevent = opdracht5_uevent;
 
-    for (i = 0; i < MAX_DEV; i++) {
+    for (i = 0; i < MAX_DEV; i++)
+    {
         cdev_init(&opdracht5_data[i].cdev, &opdracht5_fops);
         opdracht5_data[i].cdev.owner = THIS_MODULE;
 
         cdev_add(&opdracht5_data[i].cdev, MKDEV(dev_major, i), 1);
-    
+
         device_create(opdracht5_class, NULL, MKDEV(dev_major, i), NULL, "opdracht5-%d", i);
     }
 
@@ -87,13 +90,16 @@ static int opdracht5_init(void)
     g_buffer[G_BUFFER_SIZE] = '\0';
     g_buffer[G_BUFFER_SIZE - 1] = 'C';
 
-    if (request_irq(IRQ_NO, irq_handler, IRQF_SHARED, "opdracht5_int", (void *)(irq_handler))) {
+    if (request_irq(IRQ_NO, irq_handler, IRQF_SHARED, "opdracht5_int", (void *)(irq_handler)))
+    {
         printk(KERN_INFO "my_device: cannot register IRQ ");
-        free_irq(IRQ_NO,(void *)(irq_handler));
+        free_irq(IRQ_NO, (void *)(irq_handler));
     }
 
-    if (request_irq(NETWORKIRQ_NO, networkirq_handler, IRQF_SHARED, "opdracht5_int", (void *)(networkirq_handler))) {
+    if (request_irq(NETWORKIRQ_NO, networkirq_handler, IRQF_SHARED, "opdracht5_int", (void *)(networkirq_handler)))
+    {
         printk(KERN_INFO "my_device: cannot register network IRQ ");
+        free_irq(NETWORKIRQ_NO, (void *)(networkirq_handler));
     }
 
     return 0;
@@ -105,7 +111,8 @@ static void opdracht5_exit(void)
 
     printk("static void opdracht5_exit(void) called.\n");
 
-    for (i = 0; i < MAX_DEV; i++) {
+    for (i = 0; i < MAX_DEV; i++)
+    {
         device_destroy(opdracht5_class, MKDEV(dev_major, i));
         cdev_del(&opdracht5_data[i].cdev);
     }
@@ -115,7 +122,8 @@ static void opdracht5_exit(void)
 
     unregister_chrdev_region(MKDEV(dev_major, 0), MINORMASK);
 
-    free_irq(IRQ_NO,(void *)(irq_handler));
+    free_irq(IRQ_NO, (void *)(irq_handler));
+    free_irq(NETWORKIRQ_NO, (void *)(networkirq_handler));
 }
 
 static int opdracht5_open(struct inode *inode, struct file *file)
@@ -145,11 +153,13 @@ static ssize_t opdracht5_read(struct file *file, char __user *buf, size_t count,
 
     printk("Reading device: %d\n", MINOR(file->f_path.dentry->d_inode->i_rdev));
 
-    if (count + *offset > G_BUFFER_SIZE) {
+    if (count + *offset > G_BUFFER_SIZE)
+    {
         count = G_BUFFER_SIZE - *offset;
     }
 
-    if (copy_to_user(buf, g_buffer + *offset, count)) {
+    if (copy_to_user(buf, g_buffer + *offset, count))
+    {
         printk("Copy to user returned an error.\n");
         return -EFAULT;
     }
@@ -166,11 +176,13 @@ static ssize_t opdracht5_write(struct file *file, const char __user *buf, size_t
 
     printk("Writing device: %d\n", MINOR(file->f_path.dentry->d_inode->i_rdev));
 
-    if (count + *offset > G_BUFFER_SIZE) {
+    if (count + *offset > G_BUFFER_SIZE)
+    {
         count = G_BUFFER_SIZE - *offset;
     }
 
-    if (copy_from_user(g_buffer + *offset, buf, count)) {
+    if (copy_from_user(g_buffer + *offset, buf, count))
+    {
         printk("Copy from user returned an error.\n");
         return -EFAULT;
     }
