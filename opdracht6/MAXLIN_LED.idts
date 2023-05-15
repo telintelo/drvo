@@ -1,0 +1,59 @@
+# 1 "MAXLIN_LED.dts"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "MAXLIN_LED.dts"
+
+
+
+
+
+
+/dts-v1/;
+/plugin/;
+
+# 1 "include/dt-bindings/gpio/gpio.h" 1
+# 11 "MAXLIN_LED.dts" 2
+# 1 "include/dt-bindings/pinctrl/am33xx.h" 1
+# 9 "include/dt-bindings/pinctrl/am33xx.h"
+# 1 "include/dt-bindings/pinctrl/omap.h" 1
+# 10 "include/dt-bindings/pinctrl/am33xx.h" 2
+# 12 "MAXLIN_LED.dts" 2
+
+
+
+
+&{/chosen} {
+ overlays {
+  MAXLIN_LED.bb.org-overlays = "Mon May 15 23:08:15 2023";
+ };
+};
+
+
+
+
+&ocp {
+ P9_41_pinmux { status = "disabled"; };
+};
+
+&am33xx_pinmux {
+ bb_gpio_led_pins: pinmux_bb_gpio_relay_pins {
+  pinctrl-single,pins = <
+   ((((0x9b4)) & 0xffff) - (0x0800)) ((0) | (7))
+  >;
+ };
+};
+
+&{/} {
+ leds {
+  pinctrl-names = "default";
+  pinctrl-0 = <&bb_gpio_led_pins>;
+
+  compatible = "gpio-leds";
+
+  jp@1 {
+   label = "maxlin-led";
+   gpios = <&gpio0 20 0>;
+   default-state = "keep";
+  };
+ };
+};
