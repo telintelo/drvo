@@ -1,4 +1,4 @@
-TARGET_NAME := opdracht7
+TARGET_NAME := drvo-final
 
 ifneq ($(KERNELRELEASE),)
 

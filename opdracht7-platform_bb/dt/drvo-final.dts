@@ -1,0 +1,45 @@
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pinctrl/am33xx.h>
+
+/*
+ * Helper to show loaded overlays under: /proc/device-tree/chosen/overlays/
+ */
+&{/chosen} {
+	overlays {
+		MAXLIN_LED.bb.org-overlays = __TIMESTAMP__;
+	};
+};
+
+/*
+ * Free up the pins used by the cape from the pinmux helpers.
+ */
+&ocp {
+	P9_41_pinmux { status = "disabled"; };	/* P9_41: gpmc_a0.gpio0_20 */
+};
+
+&am33xx_pinmux {
+	bb_gpio_led_pins: pinmux_bb_gpio_relay_pins {
+		pinctrl-single,pins = <
+			AM33XX_PADCONF(AM335X_PIN_XDMA_EVENT_INTR1, PIN_OUTPUT_PULLDOWN, MUX_MODE7)	/* P9_41: Led1 */
+		>;
+	};
+};
+
+&{/} {
+	leds {
+		pinctrl-names = "default";
+		pinctrl-0 = <&bb_gpio_led_pins>;
+
+		compatible = "drvo-final";
+
+		jp@1 {
+			label = "drvo-final-label";
+			gpios = <&gpio0 20 GPIO_ACTIVE_HIGH>;
+			default-state = "keep";
+		};
+	};
+};
+
